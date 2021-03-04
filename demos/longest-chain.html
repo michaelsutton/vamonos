@@ -151,18 +151,18 @@ var myviz = new Vamonos.Visualizer({
             defaultGraph: new Vamonos.DataStructure.Graph({
                 directed: true,
                 vertices: [
-                    {id: "v0", x: 17,  y: 10},
-                    {id: "v1", x: 98,  y: 10},
-                    {id: "v2", x: 176, y: 13},
-                    {id: "v3", x: 15,  y: 78},
-                    {id: "v4", x: 100, y: 80},
-                    {id: "v5", x: 182, y: 80},
-                    {id: "v6", x: 15,  y: 138},
-                    {id: "v7", x: 100, y: 140},
-                    {id: "v8", x: 182, y: 140},
+                    {id: "v0", x: 100,  y: 10},
+                    {id: "v1", x: 10,  y: 100},
+                    {id: "v2", x: 10, y: 190},
+                    {id: "v3", x: 100,  y: 100},
+                    {id: "v4", x: 100, y: 190},
+                    {id: "v5", x: 100, y: 280},
+                    {id: "v6", x: 190,  y: 190},
+                    {id: "v7", x: 190, y: 280},
+                    {id: "v8", x: 100, y: 370},
                 ],
                 edges: [
-                    {source: 'v4',target: 'v0'},
+                    {source: 'v4',target: 'v1'},
                     {source: 'v1',target: 'v0'},
                     {source: 'v3',target: 'v0'},
                     {source: 'v2',target: 'v1'},
@@ -174,6 +174,7 @@ var myviz = new Vamonos.Visualizer({
                     {source: 'v8',target: 'v5'},
                     {source: 'v7',target: 'v6'},
                     {source: 'v8',target: 'v7'},
+                    {source: 'v8',target: 'v2'},
                 ]
             })
         }),
