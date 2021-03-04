@@ -1,0 +1,199 @@
+<html><head>
+    <title>Longest-Chain-Rule</title>
+
+    <meta id="meta" name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="stylesheet" href="../lib/vamonos.css">
+    <link rel="stylesheet" href="../lib/vamonos-demos.css">
+    <script type="text/javascript" src="../lib/vamonos-all.js"></script>
+
+    <link rel="stylesheet" href="../deps/bootstrap.min.css">
+    <link rel="stylesheet" href="../deps/bootstrap-theme.min.css">
+    <script type="text/javascript" src="../deps/bootstrap.min.js"></script>
+
+    <style type="text/css">
+    .vertex {
+        width: 40;
+        height: 30;
+    }
+
+    .vertex-contents {
+        font-size: .8em;
+    }
+
+    .vertex-ne-label, .vertex-nw-label {
+        font-weight: bold;
+    }
+
+    .vertex-sw-label {
+        font-style: italic;
+    }
+
+    ellipse.color-white {
+        fill: white;
+    }
+
+    ellipse.color-gray {
+        fill: #888;
+    }
+
+    ellipse.color-black {
+        fill: black;
+    }
+
+    path.red {
+        stroke: #FF7D7D;
+    }
+
+    path.blue {
+        stroke: rgb(96,127,255);
+    }
+
+    path.green {
+        stroke: #92E894;
+    }
+
+    text.color-black, text.color-gray {
+        fill: white;
+        font-weight: bold;
+    }
+
+    body {
+        text-align: center;
+    }
+    </style>
+
+</head><body>
+
+    <br>
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12 col-md-offset-1 col-md-10 col-lg-8 col-lg-offset-2 panel-default">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        Longest Chain Rule
+                    </div>
+                    <div class="row nopadding panel-body">
+                        <div class="col-sm-6 nopadding">
+                            <div id="controls"></div>
+                            <div class="pseudocode-procedures">
+                                <div id="pseudocode" title="Longest-Chain(G):">
+                                    for each b &in; G.V in topological order
+                                        b.height = 0
+                                        for each p &in; G.parents[b]
+                                            if p.height + 1 > b.height
+                                                b.height = p.height + 1
+                                                b.selected_parent = p
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 nopadding">
+                            <table class="variable-widgets">
+                                <tr><td><div id="g-var"></div></td>
+                                    <td><div id="graph"></div></td>
+                                </tr>
+                                <tr><td><div id="q-var"></div></td>
+                                    <td><div id="queue"></div></td></tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+<script type="text/javascript">
+
+var myviz = new Vamonos.Visualizer({
+    widgets: [
+        new Vamonos.Widget.Controls("controls"),
+
+        new Vamonos.Widget.Pseudocode({
+            container: "pseudocode",
+            breakpoints: [5],
+        }),
+
+        new Vamonos.Widget.VarName({
+            container: "g-var",
+            varName: "G",
+            inputVar: true,
+        }),
+
+        new Vamonos.Widget.Graph({
+            varName: "G",
+            container: "graph",
+            // inputVars: {
+            //     s: "v0"
+            // },
+            vertexLabels: {
+                inner : {
+                    edit: function(vtx){return vtx.name},
+                    display: function(vtx){return vtx.name}
+                },
+                sw    : {
+                    edit: function(vtx){return ""},
+                    display: function(vtx){return vtx.selected_parent}
+                },
+                ne    : ["u", "v"],
+                nw    : ["s"],
+            },
+            vertexCssAttributes: {
+                color: ["white", "gray", "black"],
+            },
+            edgeCssAttributes: {
+                red   : "u->v",
+                green : function(edge){
+                    return (edge.target.pred ? edge.target.pred === edge.source.name : false)
+                        || (edge.source.pred ? edge.source.pred === edge.target.name : false)
+                },
+            },
+            defaultGraph: new Vamonos.DataStructure.Graph({
+                directed: true,
+                vertices: [
+                    {id: "v0", x: 17,  y: 10},
+                    {id: "v1", x: 98,  y: 10},
+                    {id: "v2", x: 176, y: 13},
+                    {id: "v3", x: 15,  y: 78},
+                    {id: "v4", x: 100, y: 80},
+                    {id: "v5", x: 182, y: 80},
+                    {id: "v6", x: 15,  y: 138},
+                    {id: "v7", x: 100, y: 140},
+                    {id: "v8", x: 182, y: 140},
+                ],
+                edges: [
+                    {source: 'v4',target: 'v0'},
+                    {source: 'v1',target: 'v0'},
+                    {source: 'v3',target: 'v0'},
+                    {source: 'v2',target: 'v1'},
+                    {source: 'v4',target: 'v3'},
+                    {source: 'v6',target: 'v3'},
+                    {source: 'v8',target: 'v5'},
+                    {source: 'v5',target: 'v4'},
+                    {source: 'v7',target: 'v4'},
+                    {source: 'v8',target: 'v5'},
+                    {source: 'v7',target: 'v6'},
+                    {source: 'v8',target: 'v7'},
+                ]
+            })
+        }),
+
+    ],
+
+    algorithm: function (_) {
+        with (this) {
+            G.eachVertex(function(b){
+                _(2); b.height = 0
+                G.eachNeighbor(b, function(p) {
+                    _(4); if (p.height + 1 > b.height) {
+                    _(5); b.height = p.height + 1
+                    _(6); b.selected_parent = p
+                    }
+                });
+            });
+        }
+    },
+});
+
+</script>
+</html>
