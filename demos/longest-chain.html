@@ -133,7 +133,7 @@ var myviz = new Vamonos.Visualizer({
                 },
                 sw    : {
                     edit: function(vtx){return ""},
-                    display: function(vtx){return vtx.selected_parent}
+                    display: function(vtx){return vtx.height}
                 },
                 ne    : ["u", "v"],
                 nw    : ["s"],
@@ -144,8 +144,8 @@ var myviz = new Vamonos.Visualizer({
             edgeCssAttributes: {
                 red   : "u->v",
                 green : function(edge){
-                    return (edge.target.pred ? edge.target.pred === edge.source.name : false)
-                        || (edge.source.pred ? edge.source.pred === edge.target.name : false)
+                    return (edge.target.selected_parent ? edge.target.selected_parent.id === edge.source.id : false)
+                        || (edge.source.selected_parent ? edge.source.selected_parent.id === edge.target.id : false)
                 },
             },
             defaultGraph: new Vamonos.DataStructure.Graph({
