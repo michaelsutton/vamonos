@@ -19,20 +19,21 @@ class Queue {
 
     dequeue() {
         if (0 != this.queue.length) {
-            var item = this.queue[this.offset];
-            2 * ++this.offset >= this.queue.length && (this.queue = this.queue.slice(this.offset), this.offset = 0);
+            let item = this.queue[this.offset];
+            if (2 * ++this.offset >= this.queue.length) {
+                this.queue = this.queue.slice(this.offset), this.offset = 0;
+            }
             return item;
         }
     }
 
     peek() {
-        return 0 < this.queue.length ? this.queue[this.offset] : void 0;
+        return 0 < this.queue.length ? this.queue[this.offset] : undefined;
     }
 };
 
 class Block {
     constructor(index=0, hash=0) {
-        // this.children = []
         this.parents = []
         this.parent = null
         
@@ -44,7 +45,7 @@ class Block {
         this.blues = new Set()
     }
 
-    // Used to find selected parent
+    // Method used to find the selected parent by maximal blue score
     static max(block, other) {
         if (block.blue_score == other.blue_score) {
             return block.hash > other.hash ? block : other // tiebreak by max hash
@@ -52,7 +53,7 @@ class Block {
         return block.blue_score > other.blue_score ? block : other
     }
 
-    // Used to sort in (reverse) topological order  
+    // Method used to sort by blue score (thus sorting in reverse topological order)  
     static less(block, other) {
         if (block.blue_score == other.blue_score) {
             return block.hash - other.hash // tiebreak by max hash
@@ -85,6 +86,7 @@ class Block {
         return false
     }
 
+    // Iterate over past of 'this'
     *past() {
         let q = new Queue()
         let s = new Set()
@@ -102,6 +104,7 @@ class Block {
         }
     }
 
+    // Returns the merge set of 'this', that is, past(this) \ past(this.parent)
     merge_set() {
         let s = new Set(this.past())
         s.delete(this)
@@ -111,6 +114,7 @@ class Block {
         return s
     }
 
+    // Query if 'this' is in past of 'block'
     in_past(block) {
         for (const b of block.past()) {
             if (this == b) {
@@ -132,10 +136,10 @@ class DAG {
     }
 
     add_new_block(block_hash, parent_hashes) {
-
         // Assert all hash conditions
+        // TODO
         
-		// Create new block
+        // Create new block
         let new_block = new Block(this.next_index++, block_hash)
 
         // Add parents
@@ -158,39 +162,40 @@ class DAG {
         // Sort the merge set in reverse topological order
         merge_set.sort(Block.less)
 
-        // Iterate over the merge set and try coloring blocks in blue
-        for (const blue_candidate of merge_set) {
-            let candidate_past = new Set(blue_candidate.past())
-            let candidate_anticone = [...[...new_block.past()].filter(b => !candidate_past.has(b) && b.is_blue(new_block))]
+        // Iterate over the merge set and try coloring candidate blocks in blue
+        candidate_loop:
+            for (const blue_candidate of merge_set) {
+                let candidate_past = new Set(blue_candidate.past())
+                let candidate_anticone = new Map()
+                anticone_loop:
+                    for (const b of new_block.past()) {
+                        if (candidate_past.has(b)) {
+                            continue anticone_loop
+                        }
+                        if (b.is_blue(new_block)) {
+                            let bas = b.blue_anticone_size(new_block)
+                            candidate_anticone.set(b, bas)
+                            /* 
+                            Two possible k-cluster violations here:
+                                (i) The candidate blue anticone now became larger than k
+                                (ii) A block in candidate's blue anticone already has k blue blocks in its own anticone
+                            */
+                            if (candidate_anticone.size > this.k || bas == this.k) {
+                                continue candidate_loop
+                            }
+                        }
+                    }
 
-            // Too many blue blocks in anticone of candidate
-            if (candidate_anticone.length > this.k) {
-                continue
-            }
+                // No k-cluster violation found, we can now set the candidate block as blue 
+                new_block.blues.add(blue_candidate)
+                new_block.blue_sizes.set(blue_candidate, candidate_anticone.size)
+                candidate_anticone.forEach(
+                    (bas, bb) => new_block.blue_sizes.set(bb, bas + 1))
 
-            let blue_anticone_sizes = new Map()
-            for (const blue_block of candidate_anticone) {
-                blue_anticone_size = blue_block.blue_anticone_size(new_block)
-                if (blue_anticone_size == this.k) {
+                if (new_block.blues.size == this.k + 1) {
                     break
                 }
-                blue_anticone_sizes.set(blue_block, blue_anticone_size)
             }
-
-            if (blue_anticone_sizes.size < candidate_anticone.length) {
-                continue
-            }
-
-            // No k-cluster violation found, we can now set the candidate block as blue 
-            new_block.blues.add(blue_candidate)
-            new_block.blue_sizes.set(blue_candidate, candidate_anticone.length)
-            blue_anticone_sizes.forEach(
-                (bas, bb) => new_block.blue_sizes.set(bb, bas + 1))
-
-            if (new_block.blues.size == this.k) {
-                break
-            }
-        }
 
         new_block.blue_score = new_block.parent.blue_score + new_block.blues.size
 
@@ -201,7 +206,7 @@ class DAG {
 };
 
 
-var k = 1
+var k = 2
 var dag = new DAG(k=k, genesis_hash=100)
 
 dag.add_new_block(101, [100])
@@ -209,8 +214,10 @@ dag.add_new_block(102, [100])
 dag.add_new_block(103, [100])
 dag.add_new_block(104, [103])
 
-let last_block = dag.add_new_block(105, [101, 102, 104])
-console.log(last_block.blue_score)
+console.log(dag.add_new_block(105, [101, 102, 104]).blue_score)
+console.log(dag.add_new_block(106, [101]).blue_score)
+console.log(dag.add_new_block(107, [102, 104]).blue_score)
+console.log(dag.add_new_block(108, [105, 106, 107]).blue_score)
 
 
 
