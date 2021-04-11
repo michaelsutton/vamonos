@@ -40,7 +40,7 @@ class Block {
         this.index = index
         this.hash = hash 
     
-        this.blueScore = 0
+        this.blueScore = undefined
         this.blueSizes = new Map()
         this.blues = new Set()
 
@@ -88,6 +88,16 @@ class Block {
         return false
     }
 
+    *blueSet() {
+        let p = this
+        while (p != null) {
+            for (const bb of b.blues) {
+                yield bb
+            }
+            p = p.parent
+        }
+    }
+
     // Iterate over past of 'this'
     *past() {
         let q = new Queue()
@@ -132,7 +142,10 @@ class DAG {
     constructor(k, genesisHash=0) {
         this.k = k
         this.nextIndex = 0
+
         this.genesis = new Block(this.nextIndex++, genesisHash)
+        this.genesis.blueScore = 0
+
         this.blockMap = new Map()
         this.blockMap.set(this.genesis.hash, this.genesis)
     }
@@ -152,6 +165,7 @@ class DAG {
         // Find selected parent (by maximum blue score and tie breaking by max hash)
         newBlock.parent = newBlock.parents.reduce(Block.max)
 
+        vertex.color = "black"
         _(2); vertex.parent = newBlock.parent.vertex
 
         // Add 'selected_parent' as blue block
@@ -165,6 +179,17 @@ class DAG {
 
         // Sort the merge set in reverse topological order
         mergeSet.sort(Block.less)
+
+        _(3); 
+        for (const b of newBlock.parent.past()) {
+            b.vertex.color = b.isBlue(newBlock) ? "blue" : "red"
+        }
+        for (const b of mergeSet) {
+            b.vertex.color = undefined
+        }
+
+        _(4); 
+        // newBlock.parent.vertex.color = "blue"
 
         // Iterate over the merge set and try coloring candidate blocks in blue
         candidateLoop:
@@ -185,6 +210,7 @@ class DAG {
                                 (ii) A block in candidate's blue anticone already has k blue blocks in its own anticone
                             */
                             if (candidateAnticone.size > this.k || bas == this.k) {
+                                blueCandidate.vertex.color = "red"
                                 continue candidateLoop
                             }
                         }
@@ -195,16 +221,23 @@ class DAG {
                 newBlock.blueSizes.set(blueCandidate, candidateAnticone.size)
                 candidateAnticone.forEach(
                     (bas, bb) => newBlock.blueSizes.set(bb, bas + 1))
+                
+                blueCandidate.vertex.color = "blue"
 
-                if (newBlock.blues.size == this.k + 1) {
-                    break
-                }
+                // if (newBlock.blues.size == this.k + 1) {
+                //     break
+                // }
             }
 
         // Set the blue score
         newBlock.blueScore = newBlock.parent.blueScore + newBlock.blues.size
         
-        _(3); vertex.blueScore = newBlock.blueScore
+        _(5); vertex.blueScore = newBlock.blueScore
+
+        _(6); 
+        for (const b of newBlock.past()) {
+            b.vertex.color = undefined
+        }
 
         // Update block map
         this.blockMap.set(newBlock.hash, newBlock)

@@ -42,6 +42,14 @@
         fill: black;
     }
 
+    ellipse.color-blue {
+        fill: blue;
+    }
+
+    ellipse.color-red {
+        fill: red;
+    }
+
     path.red {
         stroke: #FF7D7D;
     }
@@ -54,7 +62,7 @@
         stroke: #92E894;
     }
 
-    text.color-black, text.color-gray {
+    text.color-black, text.color-gray, text.color-blue, text.color-red {
         fill: white;
         font-weight: bold;
     }
@@ -81,7 +89,10 @@
                                 <div id="pseudocode" title="GHOSTDAG(G):">
                                     for each b &in; G.V in topological order
                                         b.SelectedParent = max(b.Parents)
+                                        Find BlueSet of selected parent
                                         Add blue blocks from b.MargeSet
+                                        Set blue score
+                                        Clear current coloring
                                 </div>
                             </div>
                         </div>
@@ -169,7 +180,7 @@ var myviz = new Vamonos.Visualizer({
 
         new Vamonos.Widget.Pseudocode({
             container: "pseudocode",
-            breakpoints: [2, 3],
+            breakpoints: [2, 3, 4, 5, 6],
         }),
 
         new Vamonos.Widget.VarName({
@@ -191,13 +202,13 @@ var myviz = new Vamonos.Visualizer({
                 },
                 sw    : {
                     edit: function(vtx){return ""},
-                    display: function(vtx){return (vtx.blueScore && vtx.blueScore > 0 ? vtx.blueScore : "") }
+                    display: function(vtx){return (vtx.blueScore ? vtx.blueScore : "") }
                 },
                 ne    : ["u", "v"],
                 nw    : ["s"],
             },
             vertexCssAttributes: {
-                color: ["white", "gray", "black"],
+                color: ["white", "gray", "black", "blue", "red"],
             },
             edgeCssAttributes: {
                 red   : "u->v",
@@ -205,8 +216,8 @@ var myviz = new Vamonos.Visualizer({
                     return (edge.source.parent ? edge.source.parent.id === edge.target.id : false)
                 },
             },
-            // defaultGraph: generateBasicDAG(),
-            defaultGraph: generateDAG()
+            defaultGraph: generateBasicDAG(),
+            // defaultGraph: generateDAG()
         }),
 
     ],
@@ -222,10 +233,13 @@ var myviz = new Vamonos.Visualizer({
                 });
                 if (parentHashes.length == 0) { 
                     // Genesis block 
-                    _(2); 
-                    _(3);
                     b.block = dag.genesis
                     dag.genesis.vertex = b
+
+                    for (let i = 2; i <= 6; i++) {
+                        _(i);
+                    }
+                    b.blueScore = dag.genesis.blueScore
                 } else {
                     b.block = dag.addNewBlock(nextHash++, parentHashes, b, _)
                 }
