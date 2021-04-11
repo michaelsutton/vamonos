@@ -1,0 +1,238 @@
+<html><head>
+    <title>GHOSTDAG</title>
+
+    <meta id="meta" name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="stylesheet" href="../lib/vamonos.css">
+    <link rel="stylesheet" href="../lib/vamonos-demos.css">
+    <script type="text/javascript" src="../lib/vamonos-all.js"></script>
+
+    <link rel="stylesheet" href="../deps/bootstrap.min.css">
+    <link rel="stylesheet" href="../deps/bootstrap-theme.min.css">
+    <script type="text/javascript" src="../deps/bootstrap.min.js"></script>
+    <script type="text/javascript" src="ghostdag.js"></script>
+
+    <style type="text/css">
+    .vertex {
+        width: 40;
+        height: 30;
+    }
+
+    .vertex-contents {
+        font-size: .8em;
+    }
+
+    .vertex-ne-label, .vertex-nw-label {
+        font-weight: bold;
+    }
+
+    .vertex-sw-label {
+        font-style: italic;
+    }
+
+    ellipse.color-white {
+        fill: white;
+    }
+
+    ellipse.color-gray {
+        fill: #888;
+    }
+
+    ellipse.color-black {
+        fill: black;
+    }
+
+    path.red {
+        stroke: #FF7D7D;
+    }
+
+    path.blue {
+        stroke: rgb(96,127,255);
+    }
+
+    path.green {
+        stroke: #92E894;
+    }
+
+    text.color-black, text.color-gray {
+        fill: white;
+        font-weight: bold;
+    }
+
+    body {
+        text-align: center;
+    }
+    </style>
+
+</head><body>
+
+    <br>
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12 col-md-offset-1 col-md-10 col-lg-8 col-lg-offset-2 panel-default">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        GHOSTDAG Consensus Protocol
+                    </div>
+                    <div class="row nopadding panel-body">
+                        <div class="col-sm-6 nopadding">
+                            <div id="controls"></div>
+                            <div class="pseudocode-procedures">
+                                <div id="pseudocode" title="GHOSTDAG(G):">
+                                    for each b &in; G.V in topological order
+                                        b.SelectedParent = max(b.Parents)
+                                        Add blue blocks from b.MargeSet
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 nopadding">
+                            <table class="variable-widgets">
+                                <tr><td><div id="g-var"></div></td>
+                                    <td><div id="graph"></div></td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+<script type="text/javascript">
+
+function generateBasicDAG(){
+    return new Vamonos.DataStructure.Graph({
+        directed: true,
+        vertices: [
+            {id: "v0", x: 100,  y: 10},
+            {id: "v1", x: 10,  y: 100},
+            {id: "v2", x: 10, y: 190},
+            {id: "v3", x: 100,  y: 100},
+            {id: "v4", x: 100, y: 190},
+            {id: "v5", x: 100, y: 280},
+            {id: "v6", x: 190,  y: 190},
+            {id: "v7", x: 190, y: 280},
+            {id: "v8", x: 100, y: 370},
+        ],
+        edges: [
+            {source: 'v4',target: 'v1'},
+            {source: 'v1',target: 'v0'},
+            {source: 'v3',target: 'v0'},
+            {source: 'v2',target: 'v1'},
+            {source: 'v4',target: 'v3'},
+            {source: 'v6',target: 'v3'},
+            {source: 'v8',target: 'v5'},
+            {source: 'v5',target: 'v4'},
+            {source: 'v7',target: 'v4'},
+            {source: 'v8',target: 'v5'},
+            {source: 'v7',target: 'v6'},
+            {source: 'v8',target: 'v7'},
+            {source: 'v8',target: 'v2'},
+        ]
+            })
+}
+
+function generateDAG() {
+    genesis = {id: "genesis", x: 100,  y: 10}
+    vertices = [genesis]
+    prevLevel = [genesis]
+    currentLevel = []
+    edges = []
+
+    rows = 4
+    cols = 3
+
+    for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
+            block = {id: `v${i*cols+j}`, x: 10+j*90,  y: 10+(i+1)*90}
+            vertices.push(block)
+            currentLevel.push(block)
+            prevLevel.forEach(prevBlock => {
+                edges.push({source: block.id, target: prevBlock.id})
+            });
+        }
+        prevLevel = currentLevel
+        currentLevel = []
+    }
+
+    return new Vamonos.DataStructure.Graph({
+                directed: true,
+                vertices: vertices,
+                edges: edges
+            })
+}
+
+var myviz = new Vamonos.Visualizer({
+    widgets: [
+        new Vamonos.Widget.Controls("controls"),
+
+        new Vamonos.Widget.Pseudocode({
+            container: "pseudocode",
+            breakpoints: [2, 3],
+        }),
+
+        new Vamonos.Widget.VarName({
+            container: "g-var",
+            varName: "G",
+            inputVar: true,
+        }),
+
+        new Vamonos.Widget.Graph({
+            varName: "G",
+            container: "graph",
+            // inputVars: {
+            //     s: "v0"
+            // },
+            vertexLabels: {
+                inner : {
+                    edit: function(vtx){return vtx.name},
+                    display: function(vtx){return vtx.name}
+                },
+                sw    : {
+                    edit: function(vtx){return ""},
+                    display: function(vtx){return (vtx.blueScore && vtx.blueScore > 0 ? vtx.blueScore : "") }
+                },
+                ne    : ["u", "v"],
+                nw    : ["s"],
+            },
+            vertexCssAttributes: {
+                color: ["white", "gray", "black"],
+            },
+            edgeCssAttributes: {
+                red   : "u->v",
+                green : function(edge){
+                    return (edge.source.parent ? edge.source.parent.id === edge.target.id : false)
+                },
+            },
+            // defaultGraph: generateBasicDAG(),
+            defaultGraph: generateDAG()
+        }),
+
+    ],
+
+    algorithm: function (_) {
+        with (this) {
+            nextHash = 100
+            dag = new DAG(1, nextHash++)
+            G.eachVertex(function(b){
+                parentHashes = []
+                G.eachNeighbor(b, function(p) {
+                    parentHashes.push(p.block.hash)
+                });
+                if (parentHashes.length == 0) { 
+                    // Genesis block 
+                    _(2); 
+                    _(3);
+                    b.block = dag.genesis
+                    dag.genesis.vertex = b
+                } else {
+                    b.block = dag.addNewBlock(nextHash++, parentHashes, b, _)
+                }
+            });
+        }
+    },
+});
+
+</script>
+</html>

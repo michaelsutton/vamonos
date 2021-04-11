@@ -33,7 +33,7 @@ class Queue {
 };
 
 class Block {
-    constructor(index=0, hash=0) {
+    constructor(index=0, hash=0, vertex={}) {
         this.parents = []
         this.parent = null
         
@@ -43,6 +43,8 @@ class Block {
         this.blueScore = 0
         this.blueSizes = new Map()
         this.blues = new Set()
+
+        this.vertex = vertex
     }
 
     // Method used to find the selected parent by maximal blue score
@@ -135,12 +137,12 @@ class DAG {
         this.blockMap.set(this.genesis.hash, this.genesis)
     }
 
-    addNewBlock(blockHash, parentHashes) {
+    addNewBlock(blockHash, parentHashes, vertex={}, _=(line => {})) {
         // Assert all hash conditions
         // TODO
         
         // Create new block
-        let newBlock = new Block(this.nextIndex++, blockHash)
+        let newBlock = new Block(this.nextIndex++, blockHash, vertex)
 
         // Add parents
         for (const parentHash of parentHashes) {
@@ -149,6 +151,8 @@ class DAG {
 
         // Find selected parent (by maximum blue score and tie breaking by max hash)
         newBlock.parent = newBlock.parents.reduce(Block.max)
+
+        _(2); vertex.parent = newBlock.parent.vertex
 
         // Add 'selected_parent' as blue block
         newBlock.blues.add(newBlock.parent)
@@ -199,9 +203,11 @@ class DAG {
 
         // Set the blue score
         newBlock.blueScore = newBlock.parent.blueScore + newBlock.blues.size
+        
+        _(3); vertex.blueScore = newBlock.blueScore
 
         // Update block map
-        this.blockMap.set(blockHash, newBlock)
+        this.blockMap.set(newBlock.hash, newBlock)
 
         return newBlock
     }
