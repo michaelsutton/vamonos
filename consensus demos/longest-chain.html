@@ -83,7 +83,7 @@
                                         for each p &in; G.parents[b]
                                             if p.height + 1 > b.height
                                                 b.height = p.height + 1
-                                                b.selected_parent = p
+                                                b.selectedParent = p
                                 </div>
                             </div>
                         </div>
@@ -204,8 +204,8 @@ var myviz = new Vamonos.Visualizer({
             edgeCssAttributes: {
                 red   : "u->v",
                 green : function(edge){
-                    return (edge.target.selected_parent ? edge.target.selected_parent.id === edge.source.id : false)
-                        || (edge.source.selected_parent ? edge.source.selected_parent.id === edge.target.id : false)
+                    return (edge.target.selectedParent ? edge.target.selectedParent.id === edge.source.id : false)
+                        || (edge.source.selectedParent ? edge.source.selectedParent.id === edge.target.id : false)
                 },
             },
             // defaultGraph: generateBasicDAG(),
@@ -221,7 +221,7 @@ var myviz = new Vamonos.Visualizer({
                 G.eachNeighbor(b, function(p) {
                     _(4); if (p.height + 1 > b.height) {
                     _(5); b.height = p.height + 1
-                    _(6); b.selected_parent = p
+                    _(6); b.selectedParent = p
                     }
                 });
             });
