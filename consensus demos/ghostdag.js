@@ -165,8 +165,12 @@ class DAG {
         // Find selected parent (by maximum blue score and tie breaking by max hash)
         newBlock.parent = newBlock.parents.reduce(Block.max)
 
+        for (const b of newBlock.past()) {
+            b.vertex.color = undefined
+        }
         vertex.color = "black"
-        _(2); vertex.parent = newBlock.parent.vertex
+        _(2); 
+        vertex.parent = newBlock.parent.vertex
 
         // Add 'selected_parent' as blue block
         newBlock.blues.add(newBlock.parent)
@@ -232,12 +236,13 @@ class DAG {
         // Set the blue score
         newBlock.blueScore = newBlock.parent.blueScore + newBlock.blues.size
         
-        _(5); vertex.blueScore = newBlock.blueScore
+        _(5); 
+        vertex.blueScore = newBlock.blueScore
 
-        _(6); 
-        for (const b of newBlock.past()) {
-            b.vertex.color = undefined
-        }
+        // _(6); 
+        // for (const b of newBlock.past()) {
+        //     b.vertex.color = undefined
+        // }
 
         // Update block map
         this.blockMap.set(newBlock.hash, newBlock)

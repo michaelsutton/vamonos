@@ -32,6 +32,8 @@
 
     ellipse.color-white {
         fill: white;
+        stroke-opacity: 0.3;
+        /* opacity: 0.3; */
     }
 
     ellipse.color-gray {
@@ -50,6 +52,11 @@
         fill: red;
     }
 
+    path.white {
+        /* stroke: white; */
+        opacity: 0.3;
+    }
+
     path.red {
         stroke: #FF7D7D;
     }
@@ -65,6 +72,10 @@
     text.color-black, text.color-gray, text.color-blue, text.color-red {
         fill: white;
         font-weight: bold;
+    }
+
+    text.color-white {
+        opacity: 0.3;
     }
 
     body {
@@ -87,12 +98,11 @@
                             <div id="controls"></div>
                             <div class="pseudocode-procedures">
                                 <div id="pseudocode" title="GHOSTDAG(G):">
-                                    for each b &in; G.V in topological order
-                                        b.SelectedParent = max(b.Parents)
-                                        Find BlueSet of selected parent
-                                        Add blue blocks from b.MargeSet
-                                        Set blue score
-                                        Clear current coloring
+                                    for each B &in; G.V in topological order
+                                        B.SelectedParent = max(B.Parents) by BlueScore
+                                        Mark BlueSet of B.SelecteParent
+                                        Add blue blocks from B.MargeSet
+                                        Set b.BlueScore
                                 </div>
                             </div>
                         </div>
@@ -145,18 +155,18 @@ function generateBasicDAG(){
 }
 
 function generateDAG() {
-    genesis = {id: "genesis", x: 100,  y: 10}
-    vertices = [genesis]
-    prevLevel = [genesis]
-    currentLevel = []
-    edges = []
+    let genesis = {id: "genesis", x: 100,  y: 10}
+    let vertices = [genesis]
+    let prevLevel = [genesis]
+    let currentLevel = []
+    let edges = []
 
-    rows = 4
-    cols = 3
+    const rows = 10
+    const cols = 3
 
     for (let i = 0; i < rows; i++) {
         for (let j = 0; j < cols; j++) {
-            block = {id: `v${i*cols+j}`, x: 10+j*90,  y: 10+(i+1)*90}
+            let block = {id: `v${i*cols+j}`, x: 10+j*90,  y: 10+(i+1)*90}
             vertices.push(block)
             currentLevel.push(block)
             prevLevel.forEach(prevBlock => {
@@ -180,7 +190,7 @@ var myviz = new Vamonos.Visualizer({
 
         new Vamonos.Widget.Pseudocode({
             container: "pseudocode",
-            breakpoints: [2, 3, 4, 5, 6],
+            breakpoints: [2, 3, 4, 5],
         }),
 
         new Vamonos.Widget.VarName({
@@ -215,12 +225,24 @@ var myviz = new Vamonos.Visualizer({
                 green : function(edge){
                     return (edge.source.parent ? edge.source.parent.id === edge.target.id : false)
                 },
+                // color: ["white"]
+                white : function(edge) {
+                    return edge.source.color === "white"
+                },
             },
             defaultGraph: generateBasicDAG(),
             // defaultGraph: generateDAG()
         }),
 
     ],
+
+    /* 
+    TODO:
+        1. Visualize the context by adding opacity to all blocks and edges out of past(context)
+        2. avoid using vertex names used as variable names in pseudo code (e.g. b)
+        3. Add DAST for blue anticone of current candidtae
+        4. Add nested loop for merge set iteration 
+    */
 
     algorithm: function (_) {
         with (this) {
@@ -235,12 +257,8 @@ var myviz = new Vamonos.Visualizer({
                     // Genesis block 
                     b.block = dag.genesis
                     dag.genesis.vertex = b
-
-                    for (let i = 2; i <= 6; i++) {
-                        _(i);
-                    }
-                    b.blueScore = dag.genesis.blueScore
                 } else {
+                    G.eachVertex(c => c.color = "white")
                     b.block = dag.addNewBlock(nextHash++, parentHashes, b, _)
                 }
             });
