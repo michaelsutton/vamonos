@@ -98,12 +98,13 @@
                         <div class="col-sm-6 nopadding">
                             <div id="controls"></div>
                             <div class="pseudocode-procedures">
-                                <div id="pseudocode" title="GHOSTDAG(G):">
-                                    for each B &in; G.V in topological order
+                                <div id="pseudocode" title="GHOSTDAG(G, K):">
+                                    for each B &in; G.V in topological order:
                                         B.SelectedParent = max(B.Parents) by BlueScore
-                                        Mark BlueSet of B.SelecteParent
-                                        Add blue blocks from B.MargeSet
-                                        Set b.BlueScore
+                                        B.BlueSet = B.SelectedParent.BlueSet
+                                        for each C &in; B.MergeSet:
+                                            Add C to B.BlueSet if will remain K-cluster
+                                        Set B.BlueScore = |B.BlueSet|
                                 </div>
                             </div>
                         </div>
@@ -127,10 +128,10 @@ function generateComplexDAG() {
 
     const rows = 7
     const cols = 5
-    const unit = 60
+    const unit = 55
 
     let blocks = [
-        {i: 0, r: 1, c: 3, parents: []},
+        {i: 0, r: 1, c: 3, parents: [], name: "gns"},
         
         {i: 1, r: 2, c: 1, parents: [0]},
         {i: 2, r: 2, c: 3, parents: [0]},
@@ -149,17 +150,14 @@ function generateComplexDAG() {
         {i: 11, r: 6, c: 3, parents: [6, 8]},
         {i: 12, r: 6, c: 5, parents: [8, 9]},
         
-        {i: 13, r: 7, c: 3, parents: [10, 11, 12]},
+        {i: 13, r: 7, c: 3, parents: [10, 11, 12], name: "vrt"},
     ]
 
     let vertices = []
     let edges = []
     
     for (const block of blocks) {
-        vertices.push({id: `v${block.i}`, x: (block.c - 1)*unit, y: (rows - block.r)*unit})
-        if (block.parents.length == 0) {
-            vertices[vertices.length - 1].name = "g"
-        }
+        vertices.push({id: `v${block.i}`, x: 5 + (block.c - 1)*unit, y: (rows - block.r)*unit, name: block.name})
         for (const parent of block.parents) {
             edges.push({source: `v${block.i}`, target: `v${parent}`})
         }
@@ -240,7 +238,7 @@ var myviz = new Vamonos.Visualizer({
 
         new Vamonos.Widget.Pseudocode({
             container: "pseudocode",
-            breakpoints: [2, 3, 4, 5],
+            breakpoints: [2, 3, 5, 6],
         }),
 
         new Vamonos.Widget.VarName({

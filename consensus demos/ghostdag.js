@@ -198,6 +198,7 @@ class DAG {
         // Iterate over the merge set and try coloring candidate blocks in blue
         candidateLoop:
             for (const blueCandidate of mergeSet) {
+                _(5);
                 let candidatePast = new Set(blueCandidate.past())
                 let candidateAnticone = new Map()
                 anticoneLoop:
@@ -236,7 +237,7 @@ class DAG {
         // Set the blue score
         newBlock.blueScore = newBlock.parent.blueScore + newBlock.blues.size
         
-        _(5); 
+        _(6); 
         vertex.blueScore = newBlock.blueScore
 
         // _(6); 
