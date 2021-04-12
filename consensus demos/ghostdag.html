@@ -123,11 +123,60 @@
 </body>
 <script type="text/javascript">
 
+function generateComplexDAG() {
+
+    const rows = 7
+    const cols = 5
+    const unit = 60
+
+    let blocks = [
+        {i: 0, r: 1, c: 3, parents: []},
+        
+        {i: 1, r: 2, c: 1, parents: [0]},
+        {i: 2, r: 2, c: 3, parents: [0]},
+        {i: 3, r: 2, c: 5, parents: [0]},
+
+        {i: 4, r: 3, c: 2, parents: [1, 2, 3]},
+        {i: 5, r: 3, c: 5, parents: [3]},
+        
+        {i: 6, r: 4, c: 1, parents: [1]},
+        {i: 7, r: 4, c: 5, parents: [5]},
+        
+        {i: 8, r: 5, c: 3, parents: [4]},
+        {i: 9, r: 5, c: 4, parents: [4, 7]},
+
+        {i: 10, r: 6, c: 1, parents: [6]},
+        {i: 11, r: 6, c: 3, parents: [6, 8]},
+        {i: 12, r: 6, c: 5, parents: [8, 9]},
+        
+        {i: 13, r: 7, c: 3, parents: [10, 11, 12]},
+    ]
+
+    let vertices = []
+    let edges = []
+    
+    for (const block of blocks) {
+        vertices.push({id: `v${block.i}`, x: (block.c - 1)*unit, y: (rows - block.r)*unit})
+        if (block.parents.length == 0) {
+            vertices[vertices.length - 1].name = "g"
+        }
+        for (const parent of block.parents) {
+            edges.push({source: `v${block.i}`, target: `v${parent}`})
+        }
+    }
+
+    return new Vamonos.DataStructure.Graph({
+        directed: true,
+        vertices: vertices,
+        edges: edges,
+    })
+}
+
 function generateBasicDAG(){
     return new Vamonos.DataStructure.Graph({
         directed: true,
         vertices: [
-            {id: "v0", x: 100,  y: 10},
+            {id: "v0", x: 100,  y: 10, name: "g"},
             {id: "v1", x: 10,  y: 100},
             {id: "v2", x: 10, y: 190},
             {id: "v3", x: 100,  y: 100},
@@ -231,7 +280,8 @@ var myviz = new Vamonos.Visualizer({
                     return edge.source.color === "white"
                 },
             },
-            defaultGraph: generateBasicDAG(),
+            defaultGraph: generateComplexDAG(),
+            // defaultGraph: generateBasicDAG(),
             // defaultGraph: generateGridDAG()
         }),
 
@@ -248,7 +298,7 @@ var myviz = new Vamonos.Visualizer({
     algorithm: function (_) {
         with (this) {
             nextHash = 100
-            dag = new DAG(1, nextHash++)
+            dag = new DAG(2, nextHash++)
             G.eachVertex(function(b){
                 parentHashes = []
                 G.eachNeighbor(b, function(p) {
