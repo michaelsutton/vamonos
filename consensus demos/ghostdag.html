@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="../deps/bootstrap.min.css">
     <link rel="stylesheet" href="../deps/bootstrap-theme.min.css">
     <script type="text/javascript" src="../deps/bootstrap.min.js"></script>
+
     <script type="text/javascript" src="ghostdag.js"></script>
 
     <style type="text/css">
@@ -154,7 +155,7 @@ function generateBasicDAG(){
             })
 }
 
-function generateDAG() {
+function generateGridDAG() {
     let genesis = {id: "genesis", x: 100,  y: 10}
     let vertices = [genesis]
     let prevLevel = [genesis]
@@ -231,7 +232,7 @@ var myviz = new Vamonos.Visualizer({
                 },
             },
             defaultGraph: generateBasicDAG(),
-            // defaultGraph: generateDAG()
+            // defaultGraph: generateGridDAG()
         }),
 
     ],

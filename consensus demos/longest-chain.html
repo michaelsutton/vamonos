@@ -135,19 +135,19 @@ function generateBasicDAG(){
             })
 }
 
-function generateDAG() {
-    genesis = {id: "genesis", x: 100,  y: 10}
-    vertices = [genesis]
-    prevLevel = [genesis]
-    currentLevel = []
-    edges = []
+function generateGridDAG() {
+    let genesis = {id: "genesis", x: 100,  y: 10}
+    let vertices = [genesis]
+    let prevLevel = [genesis]
+    let currentLevel = []
+    let edges = []
 
-    rows = 10
-    cols = 3
+    const rows = 10
+    const cols = 3
 
     for (let i = 0; i < rows; i++) {
         for (let j = 0; j < cols; j++) {
-            block = {id: `v${i*cols+j}`, x: 10+j*90,  y: 10+(i+1)*90}
+            let block = {id: `v${i*cols+j}`, x: 10+j*90,  y: 10+(i+1)*90}
             vertices.push(block)
             currentLevel.push(block)
             prevLevel.forEach(prevBlock => {
@@ -209,7 +209,7 @@ var myviz = new Vamonos.Visualizer({
                 },
             },
             // defaultGraph: generateBasicDAG(),
-            defaultGraph: generateDAG()
+            defaultGraph: generateGridDAG()
         }),
 
     ],
