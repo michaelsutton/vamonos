@@ -100,11 +100,11 @@
                             <div class="pseudocode-procedures">
                                 <div id="pseudocode" title="GHOSTDAG(G, K):">
                                     for each B &in; G.V in topological order:
-                                        B.SelectedParent = max(B.Parents) by BlueScore
-                                        B.BlueSet = B.SelectedParent.BlueSet
+                                        B.SelectedParent &larr; max(B.Parents) by BlueScore
+                                        B.BlueSet &larr; B.SelectedParent.BlueSet &cup; B.SelectedParent
                                         for each C &in; B.MergeSet:
                                             Add C to B.BlueSet if will remain K-cluster
-                                        Set B.BlueScore = |B.BlueSet|
+                                        B.BlueScore &larr; |B.BlueSet|
                                 </div>
                             </div>
                         </div>
@@ -307,6 +307,7 @@ var myviz = new Vamonos.Visualizer({
                     b.block = dag.genesis
                     dag.genesis.vertex = b
                 } else {
+                    _(1);
                     G.eachVertex(c => c.color = "white")
                     b.block = dag.addNewBlock(nextHash++, parentHashes, b, _)
                 }
